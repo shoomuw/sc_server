@@ -5,3 +5,6 @@
 # References
 https://itsakura.com/csharp-socket<br>
 https://www.javadrive.jp/regex-basic/sample/index4.html
+
+# Attention
+当プログラムは自己責任でご利用ください。
