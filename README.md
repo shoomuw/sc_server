@@ -1,5 +1,6 @@
 # sc_server
 ソケットプログラミング、やりてえよな。多分無理。
+(2022/1/23) なんかできた。短文になってしまうが仕方なし。
 
 # References
 https://itsakura.com/csharp-socket<br>
