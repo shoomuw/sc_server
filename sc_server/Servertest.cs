@@ -59,7 +59,7 @@ namespace sc_server
             host = IPAddress.Parse(input);
             IPEndPoint ipe = new IPEndPoint(host, port);
             TcpListener svr = null;
-            string recvl = null;
+            string recvl, sendl = "";
             bool outflg = false;
             byte[] buf = new byte[1024];
             Regex reg = new Regex("\0");
@@ -72,24 +72,38 @@ namespace sc_server
                 svr.Start();
                 while (true)
                 {
-                    var clnt = svr.AcceptTcpClient();
-                    using(var stream = clnt.GetStream())
+                    using (var clnt = svr.AcceptTcpClient())
                     {
-                        //try
-                        //{
-                        //    // idを送る
-                        //    sendl = "urid=" + id;
-
-                        //    id++;
-                        //}
-                        while((i = stream.Read(buf, 0, buf.Length)) != 0)
+                        Console.WriteLine("Connect success");
+                        using (var stream = clnt.GetStream())
                         {
-                            recvl = reg.Replace(Encoding.UTF8.GetString(buf), "");
-                            Console.WriteLine("client: " + recvl);
-                            if(recvl == "bye")
+                            try
                             {
-                                outflg = true;
-                                break;
+                                // idを送る
+                                sendl = "urid=" + id.ToString();
+                                buf = Encoding.UTF8.GetBytes(sendl);
+                                stream.Write(buf, 0, buf.Length);
+
+                                id++;
+                            }
+                            catch(Exception e)
+                            {
+                                Console.WriteLine("Error: " + e);
+                            }
+                            finally
+                            {
+                                Array.Clear(buf, 0, buf.Length);
+                            }
+                            while ((i = stream.Read(buf, 0, buf.Length)) != 0)
+                            {
+                                recvl = reg.Replace(Encoding.UTF8.GetString(buf), "");
+                                Console.WriteLine("client: " + recvl);
+                                if (recvl == "bye")
+                                {
+                                    outflg = true;
+                                    break;
+                                }
+                                Array.Clear(buf, 0, buf.Length);
                             }
                         }
                     }
