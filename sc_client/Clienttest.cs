@@ -57,26 +57,39 @@ namespace sc_client
             Console.ReadKey();
             host = IPAddress.Parse(input);
             IPEndPoint ipe = new IPEndPoint(host, port);
-            string sendl = "";
-            byte[] buf = new byte[1024];
+            string recvID, sendl = "";
+            byte[] wbuf, rbuf = new byte[1024];
 
             Regex reg = new Regex("\0");
+            Regex confirm= new Regex("urid=");
             try
             {
                 using (var clnt = new TcpClient())
                 {
-                    while (sendl != "bye")
-                    {
-                        clnt.Connect(ipe);
-                        using (var stream = clnt.GetStream())
-                        {
-                            // 文章を入力
-                            Console.WriteLine("Please input:");
-                            sendl = Console.ReadLine();
 
-                            // サーバに送信
-                            buf = Encoding.UTF8.GetBytes(sendl);
-                            stream.Write(buf, 0, buf.Length);
+                    clnt.Connect(ipe);
+                    using (var stream = clnt.GetStream())
+                    {
+                        // サーバからIDを受信
+                        stream.Read(rbuf, 0, rbuf.Length);
+                        recvID = reg.Replace(Encoding.UTF8.GetString(rbuf), "");
+                        if (Regex.IsMatch(recvID, @"[0-9]{0,}$"))
+                        {
+                            Console.WriteLine(recvID);
+                            recvID = recvID.Replace("urid=", "");
+                            id = Int32.Parse(recvID);
+                            Console.WriteLine("Your ID is " + id);
+                            Array.Clear(rbuf, 0, rbuf.Length);
+                            while (sendl != "bye")
+                            {
+                                // 文章を入力
+                                Console.WriteLine("Please input:");
+                                sendl = Console.ReadLine();
+
+                                // サーバに送信
+                                wbuf = Encoding.UTF8.GetBytes(sendl);
+                                stream.Write(wbuf, 0, wbuf.Length);
+                            }
                         }
                     }
                 }
@@ -88,6 +101,7 @@ namespace sc_client
             finally
             {
                 Console.WriteLine("Bye...");
+                Console.ReadKey();
             }
         }
     }
